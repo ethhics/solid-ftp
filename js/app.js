@@ -9,26 +9,11 @@ function toggle(el, show) {
 }
 const auth = solid.auth
 
+// basic DOM flow stuff
 $('.logged-in').style.display = 'none'
 $('#response').style.display = 'none'
-$('#login').onclick = popupLogin
-$('#logout').onclick = auth.logout
-
-async function popupLogin() {
-	let session = await auth.currentSession()
-	const popupUri = '/popup.html'
-	if (!session)
-		session = await auth.popupLogin({ popupUri })
-}
-
-solid.auth.trackSession(session => {
-	const loggedIn = !!session
-	toggle($('.logged-out'), !loggedIn)
-	toggle($('.logged-in'), loggedIn)
-	if (session)
-		$('#user').textContent = session.webId
-})
-
+$('#login').onclick = () => auth.popupLogin({"popupUri": "/popup.html"})
+$('#logout').onclick = () => auth.logout()
 $('#upload').onclick = () => {
 	const files = $('#files').files
 	const uri = encodeURI($('#uri').value).replace(/\/?$/, '/')
@@ -39,15 +24,42 @@ $('#upload').onclick = () => {
 }
 $('#delete').onclick = () => {
 	const uri = encodeURI($('#uri').value)
-	console.log(uri)
 
-	solid.auth.fetch(uri, {
+	auth.fetch(uri, {
 		method: 'DELETE'
 	}).then(showResponse)
 }
+
+auth.trackSession(session => {
+	const loggedIn = !!session
+	toggle($('.logged-out'), !loggedIn)
+	toggle($('.logged-in'), loggedIn)
+	if (session)
+		$('#user').textContent = session.webId
+})
 
 async function showResponse(response) {
 	const data = await response.text()
 	$('#response p').textContent = data
 	$('#response').style.display = ''
+}
+
+// directory listing
+$('#view').onclick = () => loadDir($('#url').value)
+
+const LDP = $rdf.Namespace('http://www.w3.org/ns/ldp#')
+const NS = $rdf.Namespace('http://www.w3.org/1999/02/22-rdf-syntax-ns#')
+
+async function loadDir(uri) {
+	const store = $rdf.graph()
+	const fetcher = new $rdf.Fetcher(store)
+
+	await fetcher.load(uri)
+	console.log(store)
+	// get list of all nodes in dir
+	const nodes = store.each($rdf.sym(uri), LDP('contains'))
+	console.log(store.statementsMatching(undefined, NS('type'), LDP('Container')))
+	for (i=0; i<nodes.length; i++) {
+		console.log(store.each(nodes[i], NS('type')))
+	}
 }
