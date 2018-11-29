@@ -1,3 +1,4 @@
+// quality-of-life reassignments
 const $ = (el) => document.querySelector(el)
 function toggle(el, show) {
 	if (!el) return
@@ -6,17 +7,18 @@ function toggle(el, show) {
 	else
 		el.style.display = 'none'
 }
+const auth = solid.auth
 
 $('.logged-in').style.display = 'none'
 $('#response').style.display = 'none'
 $('#login').onclick = popupLogin
-$('#logout').onclick = solid.auth.logout
+$('#logout').onclick = auth.logout
 
 async function popupLogin() {
-	let session = await solid.auth.currentSession()
-	let popupUri = '/popup.html'
+	let session = await auth.currentSession()
+	const popupUri = '/popup.html'
 	if (!session)
-		session = await solid.auth.popupLogin({ popupUri })
+		session = await auth.popupLogin({ popupUri })
 }
 
 solid.auth.trackSession(session => {
@@ -27,23 +29,17 @@ solid.auth.trackSession(session => {
 		$('#user').textContent = session.webId
 })
 
-$('#upload').onclick = upload
-$('#delete').onclick = del
-
-async function upload() {
-	let session = await solid.auth.currentSession()
-	let files = $('#files').files
-	let uri = $('#uri').value
-
-	solid.auth.fetch(uri, {
-		method: 'PUT',
-		body: files[0]
-	}).then(showResponse)
+$('#upload').onclick = () => {
+	const files = $('#files').files
+	const uri = encodeURI($('#uri').value).replace(/\/?$/, '/')
+	for (i=0; i<files.length; i++) {
+		auth.fetch(uri+files[i].name, { method: 'PUT', body: files[i] })
+		.then(showResponse)
+	}
 }
-
-async function del() {
-	let session = await solid.auth.currentSession()
-	let uri = $('#uri').value
+$('#delete').onclick = () => {
+	const uri = encodeURI($('#uri').value)
+	console.log(uri)
 
 	solid.auth.fetch(uri, {
 		method: 'DELETE'
@@ -51,7 +47,7 @@ async function del() {
 }
 
 async function showResponse(response) {
-	let data = await response.text()
+	const data = await response.text()
 	$('#response p').textContent = data
 	$('#response').style.display = ''
 }
