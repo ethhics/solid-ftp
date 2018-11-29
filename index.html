@@ -3,26 +3,42 @@
 <head>
 	<meta charset="utf-8">
 	<title>Solid FTP</title>
+	<link rel="stylesheet" href="css/app.css">
 </head>
 <body>
 	<h1>Solid FTP</h1>
 	<h3>Upload/download files to/from your Solid pod</h3>
-	<div class="logged-out">
+	<div id="logged-out-content">
 		<p>Log in to view files</p>
 		<button id="login">Log in</button>
 	</div>
-	<div class="logged-in">
+	<div id="logged-in-content">
 		<p>You are logged in as <span id="user"></span>.</p>
 		<button id="logout">Log out</button><br>
 
 		<label for="url">Current directory:</label><input type="url"
 id="url">
 		<button id="view">View directory</button>
-		<div id="dir"></div>
+		<table id="dir">
+			<thead>
+				<tr>
+					<th></th>
+					<th>Name</th>
+					<th>Type</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr class="node" style="display: none;">
+					<td class="node-check"><input type="checkbox"></td>
+					<td class="node-name">example</td>
+					<td class="node-type"></td>
+				</tr>
+			</tbody>
+		</table>
 		<label for="files">Select files:</label><input type="file" id="files">
-		<label for="fname">Upload to:</label><input type="url" id="fname"><br>
 
 		<button id="upload">Upload to Solid</button>
+		<button id="download">Download from Solid</button>
 		<button id="delete">Delete from Solid</button>
 
 		<div id="response">Response: <p></p></div>
