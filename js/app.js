@@ -34,19 +34,20 @@ $('#delete').onclick = () => {
 		}).then(showResponse)
 	}
 }
-// global var hack to make download name work
-let file
 $('#download').onclick = () => {
 	// downloads turtle file for dirs
 	const url = encodeURI($('#url').value).replace(/\/?$/, '/')
 	const files = Array.from($('#dir').querySelectorAll('.node')).filter(
 		node => node.querySelector('.node-check input').checked)
 	for (var i=0; i<files.length; i++) {
-		file = files[i]
-		auth.fetch(url+encodeURIComponent(
-			files[i].querySelector('.node-name').textContent),
-			{ method: 'GET' })
-		.then(response => response.blob()).then(blob => {
+		Promise.all([
+			auth.fetch(url+encodeURIComponent(
+				files[i].querySelector('.node-name').textContent),
+				{ method: 'GET' }),
+			files[i]])
+		.then(([response, file]) => {
+			return Promise.all([response.blob(), file])
+		}).then(([blob, file]) => {
 			console.log(file.querySelector('.node-name').textContent)
 			let link = document.createElement('a')
 			link.href = window.URL.createObjectURL(blob)
