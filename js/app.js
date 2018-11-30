@@ -79,6 +79,8 @@ $('#view').onclick = () => loadDir($('#url').value)
 
 const LDP = $rdf.Namespace('http://www.w3.org/ns/ldp#')
 const NS = $rdf.Namespace('http://www.w3.org/1999/02/22-rdf-syntax-ns#')
+const STAT = $rdf.Namespace('http://www.w3.org/ns/posix/stat#')
+const TERMS = $rdf.Namespace('http://purl.org/dc/terms/')
 
 async function loadDir(uri) {
 	uri = encodeURI(uri.replace(/\/?$/, '/'))
@@ -102,6 +104,10 @@ async function loadDir(uri) {
 			nodes[i].value.replace(uri, ''))
 		node.querySelector('.node-name').onclick = (e) => nodeNameClick(e.target)
 		node.querySelector('.node-type').textContent = type
+		node.querySelector('.node-modified').textContent = new Date(
+			store.any(nodes[i], TERMS('modified'))).toLocaleString()
+		node.querySelector('.node-size').textContent = store.any(
+			nodes[i], STAT('size'))
 		toggle(node, true)
 		$('#dir tbody').appendChild(node)
 	}
